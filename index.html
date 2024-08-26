@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interfaz Dinámica</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background: #d9d9d9;
+        }
+        .hidden {
+            display: none;
+        }
+        #progress-bar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 20px 0;
+            height: 30px;
+            position: relative;
+        }
+        #progress-bar span {
+            display: block;
+            height: 100%;
+            background-color: #4caf50;
+            width: 0;
+            border-radius: 5px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #main-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+        }
+
+        button img {
+            margin-right: 10px;
+            width: 24px;
+            height: 24px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:active {
+            background-color: #388e3c;
+            transform: scale(0.98);
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        #additional-buttons {
+            display: none;
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            flex-direction: row;
+            justify-content: center;
+            flex-wrap: wrap; /* Asegura que los botones se ajusten en filas múltiples si es necesario */
+        }
+
+        #additional-buttons button {
+            margin: 5px; /* Reducido para evitar el desbordamiento en móviles */
+            padding: 10px 15px; /* Reducido para dispositivos móviles */
+            font-size: 14px; /* Tamaño de fuente reducido para móviles */
+        }
+
+        #cancel-button {
+            background-color: #f44336;
+            display: none; /* Ocultar por defecto */
+            margin-top: 20px; /* Espacio arriba del botón */
+        }
+
+        #cancel-button:hover {
+            background-color: #e53935;
+        }
+
+        #cancel-button:active {
+            background-color: #c62828;
+        }
+
+        /* Contenedor para el botón de cancelar y el botón de enterado */
+        #action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px; /* Espacio entre la barra de progreso y los botones */
+        }
+
+        #time-remaining {
+            margin-bottom: 10px; /* Espacio debajo del tiempo restante */
+        }
+
+        /* Estilos específicos para dispositivos móviles */
+        @media (max-width: 600px) {
+            #additional-buttons {
+                position: relative; /* Cambiado a relativo para asegurar que se ajuste dentro de la pantalla */
+                flex-direction: column; /* Coloca los botones en una columna */
+                top: auto; /* Ajuste automático del top */
+                left: auto; /* Ajuste automático del left */
+                transform: none; /* Elimina el transform para que se ajuste correctamente */
+            }
+
+            #additional-buttons button {
+                width: 90%; /* Asegura que los botones no se salgan de la pantalla */
+                max-width: 300px; /* Limita el ancho máximo de los botones */
+                font-size: 16px; /* Aumenta el tamaño de fuente si es necesario */
+            }
+        }
+    </style>
+</head>
+<body>
+    <br>
+    <br>
+    <div id="main-buttons">
+        <button onclick="showAdditionalButtons()">
+            <img src="platano.jpg" alt="Platano">
+            Platano
+        </button>
+        <button onclick="showAdditionalButtons()">
+            <img src="manzana.jpg" alt="Manzana">
+            Manzana
+        </button>
+        <button onclick="showAdditionalButtons()">
+            <img src="betabel.jpg" alt="Betabel">
+            Betabel
+        </button>
+        <button onclick="showAdditionalButtons()">
+            <img src="naranja.jpg" alt="Naranja">
+            Naranja
+        </button>
+    </div>
+    <div id="additional-buttons" class="hidden">
+        <button onclick="showTitle()">2 Kilos</button>
+        <button onclick="showTitle()">5 Kilos</button>
+        <button onclick="showTitle()">10 Kilos</button>
+    </div>
+    <div id="title-section" class="hidden">
+        <h1 id="title">Deshidratación del alimento en proceso</h1>
+        <br>
+        <br>
+        <div id="progress-bar">
+            <span id="progress"></span>
+        </div>
+        <br>
+        <br>
+        <p id="time-remaining">Tiempo restante: 2:00</p>
+        <div id="action-buttons">
+            <button id="cancel-button" class="hidden" onclick="resetPage()">Cancelar</button>
+            <button id="enter-button" class="hidden" onclick="resetPage()">Enterado</button>
+        </div>
+    </div>
+
+    <script>
+        let interval;
+        let totalSeconds = 120;
+
+        function showAdditionalButtons() {
+            document.getElementById('main-buttons').style.display = 'none';
+            document.getElementById('additional-buttons').style.display = 'flex';
+        }
+
+        function showTitle() {
+            document.getElementById('additional-buttons').style.display = 'none';
+            document.getElementById('title-section').style.display = 'block';
+            startProgressBar();
+        }
+
+        function startProgressBar() {
+            interval = setInterval(() => {
+                totalSeconds--;
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                document.getElementById('time-remaining').innerText = `Tiempo restante: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                document.getElementById('progress').style.width = `${(120 - totalSeconds) / 120 * 100}%`;
+
+                if (totalSeconds <= 0) {
+                    clearInterval(interval);
+                    document.getElementById('cancel-button').style.display = 'none'; // Ocultar botón de cancelar
+                    document.getElementById('enter-button').style.display = 'block'; // Mostrar botón de enterado
+                }
+            }, 1000);
+
+            document.getElementById('cancel-button').style.display = 'block'; // Mostrar botón de cancelar
+        }
+
+        function resetPage() {
+            document.getElementById('main-buttons').style.display = 'flex';
+            document.getElementById('title-section').style.display = 'none';
+            document.getElementById('enter-button').style.display = 'none';
+            document.getElementById('cancel-button').style.display = 'none';
+            totalSeconds = 120;
+            document.getElementById('progress').style.width = '0';
+            document.getElementById('time-remaining').innerText = `Tiempo restante: 2:00`;
+            clearInterval(interval);
+        }
+    </script>
+</body>
+</html>
